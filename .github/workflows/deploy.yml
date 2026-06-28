@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
       - working-directory: deploy/workers
         run: npm ci
       - uses: cloudflare/wrangler-action@v3
@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
       - run: npm install -g wrangler@4.105.0
       - run: wrangler pages deploy deploy/frontend --project-name webhook-witness-frontend
         env:
@@ -41,7 +41,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
       - run: npm install -g wrangler@4.105.0
       - run: wrangler pages deploy deploy/landing --project-name webhook-witness-landing
         env:
