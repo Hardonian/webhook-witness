@@ -26,22 +26,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: cloudflare/pages-action@v1
+      - uses: actions/setup-node@v4
         with:
-          apiToken: ${{ secrets.CF_API_TOKEN }}
-          accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          projectName: webhook-witness-frontend
-          directory: deploy/frontend
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          node-version: '20'
+      - run: npm install -g wrangler@4.105.0
+      - run: wrangler pages deploy deploy/frontend --project-name webhook-witness-frontend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
 
   deploy-landing:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: cloudflare/pages-action@v1
+      - uses: actions/setup-node@v4
         with:
-          apiToken: ${{ secrets.CF_API_TOKEN }}
-          accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          projectName: webhook-witness-landing
-          directory: deploy/landing
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          node-version: '20'
+      - run: npm install -g wrangler@4.105.0
+      - run: wrangler pages deploy deploy/landing --project-name webhook-witness-landing
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
