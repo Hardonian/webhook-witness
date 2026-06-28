@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Webhook Witness — Capture and replay webhooks fast</title>
+  <style>
+    :root{--bg:#09111f;--card:#121d34;--text:#eef2ff;--dim:#9aa7cf;--accent:#6d5efc;--border:#253356;--green:#23c483}
+    *{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,sans-serif;background:linear-gradient(180deg,#09111f,#0f1830);color:var(--text)}
+    .wrap{max-width:1100px;margin:0 auto;padding:32px 20px 80px}.hero{padding:52px 0 20px}.hero h1{font-size:56px;line-height:1.02;margin:0 0 16px}.hero p{max-width:720px;color:var(--dim);font-size:20px}
+    .buttons{display:flex;gap:14px;flex-wrap:wrap;margin:28px 0}.btn{display:inline-block;text-decoration:none;padding:14px 18px;border-radius:12px;font-weight:800}.btn.primary{background:var(--accent);color:#fff}.btn.secondary{border:1px solid var(--border);color:var(--text)}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:28px 0}.card{background:rgba(18,29,52,.92);border:1px solid var(--border);border-radius:18px;padding:20px}
+    pre{background:#08101d;border:1px solid var(--border);border-radius:18px;padding:18px;color:#b9c5ea;overflow:auto}.price{font-size:42px;font-weight:900}.small{color:var(--dim)} ul{padding-left:18px;color:var(--dim)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="small">Cloudflare Workers + D1 SaaS</div>
+      <h1>Stop losing hours to broken webhook debugging.</h1>
+      <p>Webhook Witness gives SaaS teams an instant capture inbox, payload inspector, and replay plan so Stripe, Clerk, GitHub, and custom webhooks stop blocking releases.</p>
+      <div class="buttons">
+        <a class="btn primary" href="https://webhook-witness-frontend.pages.dev">Open Live Demo</a>
+        <a class="btn secondary" href="https://github.com/Hardonian">More Projects</a>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card"><h3>Capture any provider</h3><p class="small">Post Stripe, GitHub, Clerk, Resend, or custom payloads to a dedicated capture URL and inspect them instantly.</p></div>
+      <div class="card"><h3>Replay faster</h3><p class="small">Generate a ready-to-edit curl command from a stored event so developers can reproduce failures without rebuilding the payload by hand.</p></div>
+      <div class="card"><h3>Edge cheap</h3><p class="small">Workers + D1 keep infra cost tiny while giving a globally reachable debug inbox you can sell from day one.</p></div>
+    </section>
+
+    <section class="card">
+      <h2>What buyers pay for</h2>
+      <pre>$ curl -X POST https://webhook-witness.scottrmhardie.workers.dev/api/v1/capture/stripe \
+  -H 'content-type: application/json' \
+  --data '{"type":"invoice.payment_failed","customer":"cus_123"}'
+
+→ event captured
+→ visible in dashboard
+→ replay curl generated
+→ no more guessing what the provider actually sent</pre>
+    </section>
+
+    <section class="grid">
+      <div class="card"><div>Starter</div><div class="price">$29</div><div class="small">/month</div><ul><li>1 capture inbox</li><li>500 events/month</li><li>Replay plans</li><li>Email support</li></ul></div>
+      <div class="card"><div>Team</div><div class="price">$99</div><div class="small">/month</div><ul><li>5 inboxes</li><li>10k events/month</li><li>Saved payload search</li><li>Slack alerts</li></ul></div>
+      <div class="card"><div>Agency</div><div class="price">$299</div><div class="small">/month</div><ul><li>25 inboxes</li><li>100k events/month</li><li>Client workspaces</li><li>Priority support</li></ul></div>
+    </section>
+  </div>
+</body>
+</html>

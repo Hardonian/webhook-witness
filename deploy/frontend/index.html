@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Webhook Witness Dashboard</title>
+  <style>
+    :root { --bg:#0b1020; --card:#141b34; --text:#eef2ff; --dim:#93a0c3; --accent:#6d5efc; --green:#23c483; --border:#263055; }
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--text)}
+    .wrap{max-width:1100px;margin:0 auto;padding:32px 20px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+    .btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:12px 16px;font-weight:700;cursor:pointer}.btn.alt{background:#1b2342;border:1px solid var(--border)}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:24px 0}.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px}
+    .stat{font-size:32px;font-weight:800}.label{color:var(--dim);font-size:12px;text-transform:uppercase;letter-spacing:.08em}.muted{color:var(--dim)}
+    table{width:100%;border-collapse:collapse}.table-card{overflow:auto} th,td{padding:12px;border-bottom:1px solid var(--border);text-align:left;font-size:14px}.pill{display:inline-block;background:rgba(35,196,131,.12);color:var(--green);padding:4px 8px;border-radius:999px;font-size:12px}
+    pre{white-space:pre-wrap;background:#09101f;border:1px solid var(--border);padding:16px;border-radius:14px;overflow:auto;color:#b8c2e7}
+    a{color:#b3bbff}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1 style="margin:0">Webhook Witness</h1>
+        <div class="muted">Capture, inspect, and replay webhook payloads in minutes.</div>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <button class="btn" id="seed">Seed Demo Event</button>
+        <button class="btn alt" id="refresh">Refresh</button>
+        <a class="btn alt" href="https://webhook-witness-landing.pages.dev">Sales Page</a>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card"><div class="label">Total Events</div><div class="stat" id="total-events">-</div></div>
+      <div class="card"><div class="label">Sources</div><div class="stat" id="total-sources">-</div></div>
+      <div class="card"><div class="label">Latest Source</div><div class="stat" style="font-size:20px" id="latest-source">-</div></div>
+      <div class="card"><div class="label">Capture URL</div><div class="muted" id="capture-url">-</div></div>
+    </div>
+
+    <div class="card table-card">
+      <h2>Recent Events</h2>
+      <table>
+        <thead><tr><th>ID</th><th>Source</th><th>Method</th><th>Received</th><th>Preview</th></tr></thead>
+        <tbody id="events-body"><tr><td colspan="5">Loading...</td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Latest Event Details</h2>
+        <pre id="event-detail">Select or refresh to load an event.</pre>
+      </div>
+      <div class="card">
+        <h2>Replay Command</h2>
+        <pre id="replay-plan">Replay plan will appear here.</pre>
+      </div>
+    </div>
+  </div>
+  <script>
+    const API_ORIGIN = 'https://webhook-witness.scottrmhardie.workers.dev';
+    const API_BASE = `${API_ORIGIN}/api/v1`;
+    const captureHint = `${API_BASE}/capture/stripe`;
+    document.getElementById('capture-url').textContent = captureHint;
+
+    async function loadStats() {
+      const res = await fetch(`${API_BASE}/stats`);
+      const data = await res.json();
+      document.getElementById('total-events').textContent = data.total_events ?? 0;
+      document.getElementById('total-sources').textContent = data.total_sources ?? 0;
+      document.getElementById('latest-source').textContent = data.latest_source || '—';
+    }
+
+    async function loadEventDetail(id) {
+      const [detailRes, replayRes] = await Promise.all([
+        fetch(`${API_BASE}/events/${id}`),
+        fetch(`${API_BASE}/replay-plan/${id}`)
+      ]);
+      const detail = await detailRes.json();
+      const replay = await replayRes.json();
+      document.getElementById('event-detail').textContent = JSON.stringify(detail, null, 2);
+      document.getElementById('replay-plan').textContent = replay.curl_command || JSON.stringify(replay, null, 2);
+    }
+
+    async function loadEvents() {
+      const res = await fetch(`${API_BASE}/events?limit=20`);
+      const data = await res.json();
+      const body = document.getElementById('events-body');
+      if (!data.events || !data.events.length) {
+        body.innerHTML = '<tr><td colspan="5">No events yet. Click Seed Demo Event.</td></tr>';
+        document.getElementById('event-detail').textContent = 'No events yet.';
+        document.getElementById('replay-plan').textContent = 'No replay plan yet.';
+        return;
+      }
+      body.innerHTML = data.events.map(event => `<tr data-id="${event.id}"><td>${event.id}</td><td><span class="pill">${event.source}</span></td><td>${event.method}</td><td>${new Date(event.received_at).toLocaleString()}</td><td>${event.body_preview || ''}</td></tr>`).join('');
+      for (const row of body.querySelectorAll('tr[data-id]')) {
+        row.style.cursor = 'pointer';
+        row.onclick = () => loadEventDetail(row.dataset.id);
+      }
+      await loadEventDetail(data.events[0].id);
+    }
+
+    async function seedDemo() {
+      const btn = document.getElementById('seed');
+      btn.disabled = true;
+      btn.textContent = 'Seeding...';
+      try {
+        await fetch(`${API_BASE}/demo-seed`, { method: 'POST' });
+        await refreshAll();
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Seed Demo Event';
+      }
+    }
+
+    async function refreshAll() {
+      await Promise.all([loadStats(), loadEvents()]);
+    }
+
+    document.getElementById('seed').onclick = seedDemo;
+    document.getElementById('refresh').onclick = refreshAll;
+    refreshAll().catch(err => {
+      console.error(err);
+      document.getElementById('events-body').innerHTML = '<tr><td colspan="5">Failed to load dashboard.</td></tr>';
+    });
+  </script>
+</body>
+</html>
