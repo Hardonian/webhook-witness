@@ -1,9 +1,18 @@
-name: Deploy
+name: Deploy Cloudflare Worker + Pages
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: write
+  id-token: write
+
+env:
+  NODE_VERSION: '22'
+  WRANGLER_VERSION: '4.105.0'
 
 jobs:
   deploy-worker:
@@ -12,15 +21,17 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
-      - working-directory: deploy/workers
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Install dependencies
+        if: ${{ hashFiles('deploy/workers/package.json') != '' }}
+        working-directory: deploy/workers
         run: npm ci
-      - uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CF_API_TOKEN }}
-          accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          workingDirectory: deploy/workers
-          command: deploy
+      - name: Deploy Worker
+        working-directory: deploy/workers
+        run: wrangler deploy --minify
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
 
   deploy-frontend:
     runs-on: ubuntu-latest
@@ -28,9 +39,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
-      - run: npm install -g wrangler@4.105.0
-      - run: wrangler pages deploy deploy/frontend --project-name webhook-witness-frontend
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Deploy Frontend
+        run: npx wrangler pages deploy deploy/frontend --project-name webhook-witness-frontend
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
@@ -41,9 +52,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
-      - run: npm install -g wrangler@4.105.0
-      - run: wrangler pages deploy deploy/landing --project-name webhook-witness-landing
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Deploy Landing
+        run: npx wrangler pages deploy deploy/landing --project-name webhook-witness-landing
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
