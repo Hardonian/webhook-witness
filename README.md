@@ -1,7 +1,7 @@
 # webhook-witness
 
 Capture, inspect, and replay webhook payloads.  
-**Status: Phase 2 (active development, local/test deployment)**
+**Status:** Phase 2 (deployed on Cloudflare Workers + Pages, active development)
 
 A Cloudflare Workers + D1 + Pages app for SaaS teams that need to preserve and troubleshoot incoming webhook payloads.
 
