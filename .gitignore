@@ -21,3 +21,4 @@ target/
 .vscode/
 .coverage
 htmlcov/
+.pytest_cache/
